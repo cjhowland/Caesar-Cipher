@@ -58,10 +58,10 @@ class Message(object):
         Output:
             - (dict): maps every letter (string) to another letter (string)
         '''
-        alphabet_lower = list(string.ascii_lowercase)*2     # list of lowercase letters (doubled for wrap-around shifts beyond z)
-        alphabet_upper = list(string.ascii_uppercase)*2     # list of uppercase letters (doubled for wrap-around shifts beyond Z)
-        alphabet_dict = {letter:alphabet_lower[n+(shift%26)] for n, letter in enumerate(string.ascii_lowercase)}        # dictionary assigning each lowercase letter to its corresponding shifted letter
-        alphabet_dict.update({letter:alphabet_upper[n+(shift%26)] for n, letter in enumerate(string.ascii_uppercase)})  # updated with dictionary assigning each uppercase letter to its corresponding shifted letter
+        alphabet_lower = string.ascii_lowercase     # list of lowercase letters (doubled for wrap-around shifts beyond z)
+        alphabet_upper = string.ascii_uppercase     # list of uppercase letters (doubled for wrap-around shifts beyond Z)
+        alphabet_dict = {letter:alphabet_lower[(n+shift)%26] for n, letter in enumerate(string.ascii_lowercase)}        # dictionary assigning each lowercase letter to its corresponding shifted letter
+        alphabet_dict.update({letter:alphabet_upper[(n+shift)%26] for n, letter in enumerate(string.ascii_uppercase)})  # updated with dictionary assigning each uppercase letter to its corresponding shifted letter
         return alphabet_dict
 
     def apply_shift(self, shift):
@@ -84,7 +84,6 @@ class Message(object):
             else:
                 cipher += str(self.text[i])                       # if the given character is not a letter (i.e. punctuation),
         return cipher                                             #     add it to the encoded message string as is
-
 
 
 
@@ -281,10 +280,12 @@ class CipherMsg(Message):
             score.append(num)                                               # appends the number of valid words for this shift to empty list
             
         self.best_shift = score.index(max(score))                           # identifies the shift value (given by the index) of the highest score
-        self.decoded_msg =  Message.apply_shift(self, self.best_shift)      # applies the shift of the highest score
-        self.is_decrypted = True                                            # changes is_decrypted switch to True!
-
-        return self.decoded_msg                                             # returns the decoded message
+        if self.best_shift == 0:
+            print('Message could not be decrypted.')
+        else:
+            self.decoded_msg =  Message.apply_shift(self, self.best_shift)      # applies the shift of the highest score
+            self.is_decrypted = True                                            # changes is_decrypted switch to True!
+            return self.decoded_msg                                             # returns the decoded message
 
 
 
@@ -340,41 +341,73 @@ def decode_story(cipher_file, new_file_name):
 
 
 
+if __name__ == '__main__':
+    print('Welcome!')
+    print('=================================================================================')
+    en_decode = input('Would you like to encrypt or decrypt? Type "E" for encrypt or "D" for decrypt. ')
+    if en_decode == 'E':
+        text_or_file = input('Would you like to encrypt direct text or read in a file? Type "T" for text or "F" for file. ')
+        if text_or_file == 'T':
+            plaintext = Message(input('Type your plaintext message here: '))
+            user_shift = input('By how many letters would you like to shift? Enter any integer. ')
+            print('Cipher message: ',plaintext.apply_shift(int(user_shift)))
+        elif text_or_file == 'F':
+            plaintext_filename = input('Enter file name (without .txt.): ')
+            new_file_name = input('Enter name of new file (without .txt.): ')
+            user_shift = int(input('By how many letters would you like to shift? Enter any integer. '))
+            encode_story(plaintext_filename+'.txt', new_file_name+'.txt', user_shift)
+            print('Cipher saved to text file titled '+new_file_name+'.txt!')
+        else:
+            print('Entry not recognized. Please enter "T" for text or "F" for file.  ')
+    elif en_decode == 'D':
+        text_or_file = input('Would you like to decrypt direct text or read in a file? Type "T" for text or "F" for file. ')
+        if text_or_file == 'T':
+            cipher = CipherMsg(input('Type your encrypted message here: '))
+            print('Decrypted message: ',cipher.decrypt_msg(load_words()))
+        elif text_or_file == 'F':
+            cipher_filename = input('Enter file name (without .txt.): ')
+            new_file_name = input('Enter name of new file (without .txt.): ')
+            decode_story(cipher_filename+'.txt', new_file_name+'.txt')
+            print('Decoded message saved to text file titled '+new_file_name+'.txt!')
+        else:
+            print('Entry not recognized. Please enter "T" for text or "F" for file.  ')
+    else:
+        print('Entry not recognized. Please enter "E" for encrypt or "D" for decrypt. ')
+
+
 
 # Testing
-if __name__ == '__main__':
+def test_methods():
     # test of the Message class
+    print('Testing Results:')
+    print('================================================')
     plaintext = Message('Happy Birthday!')
-    print(plaintext.get_message_text())
-    # 'Happy Birthday!'
-    print(plaintext.apply_shift(1))
-    # 'Ibqqz Cjsuiebz!'
-    print(plaintext.apply_shift(18))
-    # 'Zshhq Tajlzvsq!'
-
+    print("Message get_message_text() check passes? ", plaintext.get_message_text() == "Happy Birthday!")
+    print("Message 1-shift check passes? ", plaintext.apply_shift(1) == "Ibqqz Cjsuiebz!")
+    print("Message 18-shift check passes? ", plaintext.apply_shift(18) == "Zshhq Tajlzvsq!")
+   
     # test of the PlainMsg class
     msg = PlainMsg('Hello, World!', 5)
-    print(msg.get_encrypted_msg())
-    # 'Mjqqt, Btwqi!'
+    print("PlainMsg get_encrypted_msg() check passes? ", msg.get_encrypted_msg() == "Mjqqt, Btwqi!")
     msg.change_shift(23)
-    print(msg.get_encrypted_msg())
-    # 'Ebiil, Tloia!'
+    print("PlainMsg change_shift() check passes? ", msg.get_encrypted_msg() == "Ebiil, Tloia!")
 
     # test of the get_words function
-    print(get_words("Hello! How are you today, ma'am?"))
-    # ['Hello', 'How', 'are', 'you', 'today', 'maam']
+    print("get_words() check passes? ", get_words("Hello! How are you today, ma'am?") == ['Hello', 'How', 'are', 'you', 'today', 'maam'])
 
     # test of the count_valid_words function
     valid_words = load_words()
-    print(count_valid_words(['merkle', 'identity', 'tloia', 'decentralized'], valid_words))
-    # 2
+    print("count_valid_words check passes? ", count_valid_words(['merkle', 'identity', 'tloia', 'decentralized'], valid_words) == 2)
     
     # test of the CipherMsg class
     cipher_example = CipherMsg('Svnpj dpss nla fvb myvt H av G; pthnpuhapvu dpss nla fvb lclyfdolyl. - Hsilya Lpuzalpu')
-    print(cipher_example.decrypt_msg(load_words()))
-    # Logic will get you from A to Z; imagination will get you everywhere. - Albert Einstein
+    print("CipherMsg decrypt_msg() check passes? ", cipher_example.decrypt_msg(load_words()) == 'Logic will get you from A to Z; imagination will get you everywhere. - Albert Einstein')
 
     # test of decode_story function
     decode_story('EncodedCoverLetter.txt', 'DecodedCoverLetter.txt')
     # saves file titled 'DecodedCoverLetter.txt' with entire decoded message
+    print('================================================')
 
+
+# To run the above tests, uncomment the line below
+#test_methods()
