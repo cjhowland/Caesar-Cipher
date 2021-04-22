@@ -61,7 +61,7 @@ class Message(object):
         alphabet_lower = list(string.ascii_lowercase)*2     # list of lowercase letters (doubled for wrap-around shifts beyond z)
         alphabet_upper = list(string.ascii_uppercase)*2     # list of uppercase letters (doubled for wrap-around shifts beyond Z)
         alphabet_dict = {letter:alphabet_lower[n+(shift%26)] for n, letter in enumerate(string.ascii_lowercase)}        # dictionary assigning each lowercase letter to its corresponding shifted letter
-        alphabet_dict.update({letter:alphabet_upper[n+(shift%26)] for n, letter in enumerate(string.ascii_uppercase)})  # dictionary assigning each uppercase letter to its corresponding shifted letter
+        alphabet_dict.update({letter:alphabet_upper[n+(shift%26)] for n, letter in enumerate(string.ascii_uppercase)})  # updated with dictionary assigning each uppercase letter to its corresponding shifted letter
         return alphabet_dict
 
     def apply_shift(self, shift):
@@ -90,8 +90,7 @@ class Message(object):
 
 class PlainMsg(Message):
     '''
-    This subclass focuses on converting plaintext messages into encrypted
-    messages and easily modifying the content.
+    This subclass focuses on converting plaintext messages into encrypted messages and easily modifying the content.
 
     Example Usage:
     >>> msg = PlainMsg('Hello, World!', 5)
@@ -104,7 +103,7 @@ class PlainMsg(Message):
 
     def __init__(self, text, shift):
         '''
-        Initializes a PlainMsg type object, inheriting from the Message parent class
+        Initializes a PlainMsg type object, inheriting from the Message parent class.
 
         Inputs:
             - text (string): the plain message text
@@ -157,7 +156,6 @@ class PlainMsg(Message):
 
 
 
-
 # Functions to accompany CipherMsg
 
 def load_words():
@@ -189,15 +187,15 @@ def get_words(phrase):
     >>> print(get_words("Hello! How are you today, ma'am?"))
     ['Hello', 'How', 'are', 'you', 'today', 'maam']
     '''
-    alphabet = list(string.ascii_lowercase) + list(string.ascii_uppercase)      # create a list including both upper- and lowercase letters  
-    phrase_list = []                                                            # initialize empty list to which to append striped words
-    for i in phrase.split():                                                    # split phrase into individual words
-        character_list = list(i)                                                # convert word string into list of individual characters
-        for n in range(len(character_list)):                                    # loop through all individual characters
+    alphabet = list(string.ascii_lowercase) + list(string.ascii_uppercase)      # creates a list including both upper- and lowercase letters  
+    phrase_list = []                                                            # initializes empty list to which to append striped words
+    for i in phrase.split():                                                    # splits phrase into individual words
+        character_list = list(i)                                                # converts word string into list of individual characters
+        for n in range(len(character_list)):                                    # loops through all individual characters
             if i[n] not in alphabet:                                            # if statement to check if the character is a letter
                 character_list.remove(i[n])                                     # if not a letter (puncuation), it is removed
-        phrase_list.append(''.join(character_list))                             # append the words striped of punctuation to the empty list
-    return phrase_list                                                          # return the list of strings (words without punctuation)
+        phrase_list.append(''.join(character_list))                             # appends the words stripped of punctuation to the empty list
+    return phrase_list                                                          # returns the list of strings (words without punctuation)
 
 
 def count_valid_words(potential_words, list_valid_words):
@@ -219,11 +217,11 @@ def count_valid_words(potential_words, list_valid_words):
     >>> print(count_valid_words(['merkle', 'identity', 'tloia', 'decentralized'], valid_words))
     2
     '''
-    counter = 0                                        # initialize counter at 0
-    for word in potential_words:                       # loop through list of potential words from input
-        if word.lower() in list_valid_words:           # search for lowercase-converted word in list of valid words
-            counter += 1                               # if the potential word matches an entry in the list of valid words, increase counter by 1
-    return counter                                     # after checking all potential words, return the sum total of the valid words
+    counter = 0                                        # initializes counter at 0
+    for word in potential_words:                       # loops through list of potential words from input
+        if word.lower() in list_valid_words:           # searches for lowercase-converted word in list of valid words
+            counter += 1                               # if the potential word matches an entry in the list of valid words, increases counter by 1
+    return counter                                     # after checking all potential words, returns the sum total of the valid words
 
 
 
@@ -270,24 +268,23 @@ class CipherMsg(Message):
         Updates the attributes of self.is_decrypted, self.best_shift, and self.decoded_msg after finding the best shift and decoding the message. 
 
         Input:
-            - valid_words (list of string): the list of valid english
-                words to compare potential messages to.
+            - valid_words (list of string): the list of valid English words to compare potential messages to.
         Output:
             - (string): the decoded message string
         '''
-        dictionary = load_words()                                           # load in dictionary
-        score = []                                                          # initialize empty list in which to append the 'score': the number of valid words resulting from each shift
-        for i in range(26):                                                 # loop through all possible shifts (26)
-            shifted_msg = Message.apply_shift(self, i)                      # use apply_shift method to shift phrase by fixed integer given by i (between 0 and 26)
-            shifted_msg_list = get_words(shifted_msg)                       # create list of strings without punctuation of shifted phrase
-            num = count_valid_words(shifted_msg_list, dictionary)           # count the number of valid words in this shift
-            score.append(num)                                               # append the number of valid words for this shift to empty list
+        dictionary = load_words()                                           # loads in dictionary
+        score = []                                                          # initializes empty list in which to append the 'score': the number of valid words resulting from each shift
+        for i in range(26):                                                 # loops through all possible shifts (26)
+            shifted_msg = Message.apply_shift(self, i)                      # uses apply_shift method to shift phrase by fixed integer given by i (between 0 and 26)
+            shifted_msg_list = get_words(shifted_msg)                       # creates list of strings without punctuation of shifted phrase
+            num = count_valid_words(shifted_msg_list, dictionary)           # counts the number of valid words in this shift
+            score.append(num)                                               # appends the number of valid words for this shift to empty list
             
-        self.best_shift = score.index(max(score))                           # identity the shift value (given by the index) of the highest score
-        self.decoded_msg =  Message.apply_shift(self, self.best_shift)      # apply the shift of the highest score
-        self.is_decrypted = True                                            # change is_decrypted switch to True!
+        self.best_shift = score.index(max(score))                           # identifies the shift value (given by the index) of the highest score
+        self.decoded_msg =  Message.apply_shift(self, self.best_shift)      # applies the shift of the highest score
+        self.is_decrypted = True                                            # changes is_decrypted switch to True!
 
-        return self.decoded_msg                                             # return the decoded message
+        return self.decoded_msg                                             # returns the decoded message
 
 
 
@@ -302,43 +299,44 @@ def read_story(file_name):
     Output:
         - (string): single string of entire file
     '''
-    f = open(file_name, 'r')                                   # read in the file
-    lines = f.readlines()                                      # split the text into separate lines
-    f.close()                                                  # close file
+    f = open(file_name, 'r')                                   # reads in the file
+    lines = f.readlines()                                      # splits the text into separate lines
+    f.close()                                                  # closes file
     return ''.join(lines)                                      # returns all items joined together in a string
 
 
-def encode_story(plaintext, new_file_name, shift):
+def encode_story(plaintext_file, new_file_name, shift):
     '''
     Reads in a text file, shifts each letter by a given shift value, and saves the encoded message to a text file.
 
     Inputs:
-    - file_name (string): Name of file to read in
+    - plaintext_file (string): Name of file to read in
+    - new_file_name (string): Name of new file to be created
     Outputs:
     - Nothing (saves the encoded message to a text file)
     '''
-    listwords = Message(read_story(plaintext))                    # read in the text file contents as a Message object
-    encoded = listwords.apply_shift(shift)                        # apply the given shift
-    encoded_txt = open(new_file_name, 'w')                        # open new text file with writing capability 
-    encoded_txt.write(encoded)                                    # write the encoded message to the new file
-    encoded_txt.close()                                           # close the new file
+    listwords = Message(read_story(plaintext_file))                    # reads in the text file contents as a Message object
+    encoded = listwords.apply_shift(shift)                        # applies the given shift
+    encoded_txt = open(new_file_name, 'w')                        # opens new text file with writing capability 
+    encoded_txt.write(encoded)                                    # writes the encoded message to the new file
+    encoded_txt.close()                                           # closes the new file
 
 
-def decode_story(cipher_message, new_file_name):
+def decode_story(cipher_file, new_file_name):
     '''
     Determines the proper shift necessary to decode the encrypted story. Writes the resulting decrypted story to the file 'decoded_story.txt'.
 
     Inputs:
-        - cipher_message (string): name of the file to be decrypted
+        - cipher_file (string): name of the file to be decrypted
         - new_file_name (string): name of the new file in which to write the decrypted message
     Outputs:
         - None (saves a file with the decryped story)
     '''
-    listwords = CipherMsg(read_story(cipher_message))              # read in the text file as a CipherMsg object
-    decoded = listwords.decrypt_msg(load_words())                  # use the decrypt_msg function to decode the message
-    decoded_txt = open(new_file_name, 'w')                         # open new text file with writing capability
-    decoded_txt.write(decoded)                                     # write the decoded message to the new file
-    decoded_txt.close()                                            # close the new file
+    listwords = CipherMsg(read_story(cipher_file))              # reads in the text file as a CipherMsg object
+    decoded = listwords.decrypt_msg(load_words())                  # uses the decrypt_msg function to decode the message
+    decoded_txt = open(new_file_name, 'w')                         # opens new text file with writing capability
+    decoded_txt.write(decoded)                                     # writes the decoded message to the new file
+    decoded_txt.close()                                            # closes the new file
 
 
 
@@ -376,4 +374,7 @@ if __name__ == '__main__':
     print(cipher_example.decrypt_msg(load_words()))
     # Logic will get you from A to Z; imagination will get you everywhere. - Albert Einstein
 
+    # test of decode_story function
+    decode_story('EncodedCoverLetter.txt', 'DecodedCoverLetter.txt')
+    # saves file titled 'DecodedCoverLetter.txt' with entire decoded message
 
