@@ -158,6 +158,76 @@ class PlainMsg(Message):
 
 
 
+# Functions to accompany CipherMsg
+
+def load_words():
+    '''
+    A function to import a dictionary of valid words with which to compare decrypted words.
+
+    Outputs:
+        - (list of strings): list of lowercase valid words
+    '''
+
+    f = open('words.txt', 'r')                                           # open text file containing word dictionary
+    wordlist = []                                                        # initialize an empty list to which to append the words
+    for line in f:                                                       # splits the letters between a space into a string,
+        wordlist.extend([word.lower() for word in line.split(' ')])      #     converts all letters to lowercase, and adds all
+    f.close()                                                            #     words to the empty list
+    return wordlist                                                      # closes the file and returns the list of word strings
+
+
+def get_words(phrase):
+    '''
+    Splits a phrase or sentence up into a list of individual words, removing all punctation.
+
+    Input:
+        - phrase (string): The string to be broken up into words
+    Output:
+        - (list of strings): list of the individual words without punctuation
+    
+    Example usage:
+    >>> print(get_words("Hello! How are you today, ma'am?"))
+    ['Hello', 'How', 'are', 'you', 'today', 'maam']
+    '''
+    alphabet = list(string.ascii_lowercase) + list(string.ascii_uppercase)      # create a list including both upper- and lowercase letters  
+    phrase_list = []                                                            # initialize empty list to which to append striped words
+    for i in phrase.split():                                                    # split phrase into individual words
+        character_list = list(i)                                                # convert word string into list of individual characters
+        for n in range(len(character_list)):                                    # loop through all individual characters
+            if i[n] not in alphabet:                                            # if statement to check if the character is a letter
+                character_list.remove(i[n])                                     # if not a letter (puncuation), it is removed
+        phrase_list.append(''.join(character_list))                             # append the words striped of punctuation to the empty list
+    return phrase_list                                                          # return the list of strings (words without punctuation)
+
+
+def count_valid_words(potential_words, list_valid_words):
+    '''
+    Compares the list of potential words to the provided list of
+    valid words, and returns a count of how many of the potential
+    words are real words. Ensures that the capitalization of all
+    words matches.
+
+    Inputs:
+        - potential_words (list of strings): list of the individual
+            words to check if they are real words
+        - list_valid_words (list of strings): list of valid words
+            read in from the 'words.txt' file 
+                - use (load_words())
+    Output:
+        - (integer): the number of words in potential_words which
+            are found to be real valid words
+    Example usage:
+    >>> valid_words = load_words()
+    >>> print(count_valid_words(['merkle', 'identity', 'tloia', 'decentralized'], valid_words))
+    2
+    '''
+    counter = 0                                        # initialize counter at 0
+    for word in potential_words:                       # loop through list of potential words from input
+        if word.lower() in list_valid_words:           # search for lowercase-converted word in list of valid words
+            counter += 1                               # if the potential word matches an entry in the list of valid words, increase counter by 1
+    return counter                                     # after checking all potential words, return the sum total of the valid words
+
+
 
 
 
@@ -179,5 +249,14 @@ if __name__ == '__main__':
     msg.change_shift(23)
     print(msg.get_encrypted_msg())
     # 'Ebiil, Tloia!'
+
+    # test of the get_words function
+    print(get_words("Hello! How are you today, ma'am?"))
+    # ['Hello', 'How', 'are', 'you', 'today', 'maam']
+
+    # test of the count_valid_words function
+    valid_words = load_words()
+    print(count_valid_words(['merkle', 'identity', 'tloia', 'decentralized'], valid_words))
+    # 2
     
 
