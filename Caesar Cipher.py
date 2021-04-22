@@ -292,7 +292,53 @@ class CipherMsg(Message):
 
 
 
+def read_story(file_name):
+    '''
+    Reads in the file_name and outputs a string. Takes multiline files and stitches them back together in a single string with line-breaks
+    embedded in the string.
 
+    Input:
+        - file_name (string): Name of file to read in
+    Output:
+        - (string): single string of entire file
+    '''
+    f = open(file_name, 'r')                                   # read in the file
+    lines = f.readlines()                                      # split the text into separate lines
+    f.close()                                                  # close file
+    return ''.join(lines)                                      # returns all items joined together in a string
+
+
+def encode_story(plaintext, new_file_name, shift):
+    '''
+    Reads in a text file, shifts each letter by a given shift value, and saves the encoded message to a text file.
+
+    Inputs:
+    - file_name (string): Name of file to read in
+    Outputs:
+    - Nothing (saves the encoded message to a text file)
+    '''
+    listwords = Message(read_story(plaintext))                    # read in the text file contents as a Message object
+    encoded = listwords.apply_shift(shift)                        # apply the given shift
+    encoded_txt = open(new_file_name, 'w')                        # open new text file with writing capability 
+    encoded_txt.write(encoded)                                    # write the encoded message to the new file
+    encoded_txt.close()                                           # close the new file
+
+
+def decode_story(cipher_message, new_file_name):
+    '''
+    Determines the proper shift necessary to decode the encrypted story. Writes the resulting decrypted story to the file 'decoded_story.txt'.
+
+    Inputs:
+        - cipher_message (string): name of the file to be decrypted
+        - new_file_name (string): name of the new file in which to write the decrypted message
+    Outputs:
+        - None (saves a file with the decryped story)
+    '''
+    listwords = CipherMsg(read_story(cipher_message))              # read in the text file as a CipherMsg object
+    decoded = listwords.decrypt_msg(load_words())                  # use the decrypt_msg function to decode the message
+    decoded_txt = open(new_file_name, 'w')                         # open new text file with writing capability
+    decoded_txt.write(decoded)                                     # write the decoded message to the new file
+    decoded_txt.close()                                            # close the new file
 
 
 
