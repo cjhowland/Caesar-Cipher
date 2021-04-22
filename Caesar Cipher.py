@@ -202,10 +202,8 @@ def get_words(phrase):
 
 def count_valid_words(potential_words, list_valid_words):
     '''
-    Compares the list of potential words to the provided list of
-    valid words, and returns a count of how many of the potential
-    words are real words. Ensures that the capitalization of all
-    words matches.
+    Compares the list of potential words to the provided list of valid words, and returns a count of how many of the potential
+    words are real words. Ensures that the capitalization of all words matches.
 
     Inputs:
         - potential_words (list of strings): list of the individual
@@ -226,6 +224,74 @@ def count_valid_words(potential_words, list_valid_words):
         if word.lower() in list_valid_words:           # search for lowercase-converted word in list of valid words
             counter += 1                               # if the potential word matches an entry in the list of valid words, increase counter by 1
     return counter                                     # after checking all potential words, return the sum total of the valid words
+
+
+
+
+
+
+class CipherMsg(Message):
+    '''
+    This subclass focuses on decrypting ciphers by identifying the shift with the greatest number of valid words.
+
+    Example Usage:
+    >>> cipher_example = CipherMsg('Svnpj dpss nla fvb myvt H av G; pthnpuhapvu dpss nla fvb lclyfdolyl. - Hsilya Lpuzalpu')
+    >>> print(cipher_example.decrypt_msg(load_words()))
+    Logic will get you from A to Z; imagination will get you everywhere. - Albert Einstein
+    '''
+
+    def __init__(self, text):
+        '''
+        Initializes a CipherMsg object.
+
+        Input:
+            - text (string): The messages encrypted text
+
+        A CipherMsg object inherits from Message and has 4 attributes:
+            - self.message_text (string, determined from input)
+            - self.is_decrypted (bool, initially False)
+            - self.best_shift (integer, initially None)
+            - self.decoded_msg (string, initially None)
+        '''
+        Message.__init__(self,text)
+        self.text = text
+        self.message_text = Message.get_message_text(self)
+        self.is_decrypted = False
+        self.best_shift = None
+        self.decoded_msg = None
+
+
+    def decrypt_msg(self, valid_words):
+        '''
+        Decryptes self.message_text by trying every possible shift value and finding the "best" one, where "best" here is the shift
+        value that results in the greatest number of valid words found in the resulting decrypted message. If multiple shifts are
+        equally "best", then any can be set as the decoded message.
+
+        Updates the attributes of self.is_decrypted, self.best_shift, and self.decoded_msg after finding the best shift and decoding the message. 
+
+        Input:
+            - valid_words (list of string): the list of valid english
+                words to compare potential messages to.
+        Output:
+            - (string): the decoded message string
+        '''
+        dictionary = load_words()                                           # load in dictionary
+        score = []                                                          # initialize empty list in which to append the 'score': the number of valid words resulting from each shift
+        for i in range(26):                                                 # loop through all possible shifts (26)
+            shifted_msg = Message.apply_shift(self, i)                      # use apply_shift method to shift phrase by fixed integer given by i (between 0 and 26)
+            shifted_msg_list = get_words(shifted_msg)                       # create list of strings without punctuation of shifted phrase
+            num = count_valid_words(shifted_msg_list, dictionary)           # count the number of valid words in this shift
+            score.append(num)                                               # append the number of valid words for this shift to empty list
+            
+        self.best_shift = score.index(max(score))                           # identity the shift value (given by the index) of the highest score
+        self.decoded_msg =  Message.apply_shift(self, self.best_shift)      # apply the shift of the highest score
+        self.is_decrypted = True                                            # change is_decrypted switch to True!
+
+        return self.decoded_msg                                             # return the decoded message
+
+
+
+
 
 
 
@@ -259,4 +325,9 @@ if __name__ == '__main__':
     print(count_valid_words(['merkle', 'identity', 'tloia', 'decentralized'], valid_words))
     # 2
     
+    # test of the CipherMsg class
+    cipher_example = CipherMsg('Svnpj dpss nla fvb myvt H av G; pthnpuhapvu dpss nla fvb lclyfdolyl. - Hsilya Lpuzalpu')
+    print(cipher_example.decrypt_msg(load_words()))
+    # Logic will get you from A to Z; imagination will get you everywhere. - Albert Einstein
+
 
